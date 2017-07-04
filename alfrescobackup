@@ -5,7 +5,7 @@
 
 # Configuration:
   TIMESTAMP=$(date +%mM-%dD-%YA-%HH-%MM)	  	# Create timestamp using format month, day, year, hour, minute
-  DUMP_NUM=12				         	# Number of backups to keep
+  DUMP_NUM=7				         	# Number of backups to keep
   AL_FOLDER="/opt/alfresco-community"		  	# Alfresco folder
   AL_DATA="/opt/alfresco-community/alf_data"	 	# Alfresco data folder
   DB_HOME="/opt/alfresco-community/postgresql"	  	# PostgreSQL folder
@@ -66,12 +66,16 @@ function p_stop()
   # -Ft = Export database as tar file
   PGPASSWORD=$POSTGRESPASS $DB_HOME/bin/pg_dump -U alfresco alfresco -Ft > $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
   chown postgres $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP  
+  
+# Create a log with the date of the script
+  echo " " >> /var/log/alfrescobackup.log
+  echo $TIMESTAMP >> /var/log/alfrescobackup.log
 
   # Check if an error was returned
   if [ "$?" = "0" ]; then
-    echo "Database export worked!" > $TARGET_FOLDER/$TIMESTAMP/alfrescobackup.log
+    echo "Database export worked!" >> /var/log/alfrescobackup.log
   else
-    echo "Database export failed!" > $TARGET_FOLDER/$TIMESTAMP/alfrescobackup.log
+    echo "Database export failed!" >> /var/log/alfrescobackup.log
   fi
 
 #------------------------------------------
@@ -82,13 +86,13 @@ function p_stop()
 
   # Tar the Alfresco data folder to the backup
   # to the backup folder specified
-  tar zcf $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $AL_DATA >> $TARGET_FOLDER/$TIMESTAMP/alfrescobackup.log
+  tar zcf $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $AL_DATA >> /var/log/alfrescobackup.log
   
   # Alfresco data check if an error was returned
   if [ "$?" = "0" ]; then
-    echo "Alfresco alf_data backup worked!" >> $TARGET_FOLDER/$TIMESTAMP/alfrescobackup.log
+    echo "Alfresco alf_data backup worked!" >> /var/log/alfrescobackup.log
   else
-    echo "Alfresco alf_data backup failed!" >> $TARGET_FOLDER/$TIMESTAMP/alfrescobackup.log
+    echo "Alfresco alf_data backup failed!" >> /var/log/alfrescobackup.log
   fi
 
 #------------------------------------------
@@ -96,52 +100,52 @@ function p_stop()
 #------------------------------------------
   p_stop
 
-#  al_start 
+  al_start 
 
 #------------------------------------------
 # 5 - Merge the database and data files
 #------------------------------------------
 
   # Create a backup filename with timestamp
-  tar zcf $TARGET_FOLDER/$TIMESTAMP.tgz $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP $TARGET_FOLDER/$TIMESTAMP/alfrescobackup.log
+  tar zcf $TARGET_FOLDER/$TIMESTAMP.tgz $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
 
   # If files were merged, delete the duplicates
   if [ -f "$TARGET_FOLDER/$TIMESTAMP.tgz" ]; then
     rm -rf $TARGET_FOLDER/$TIMESTAMP/
-#------------------------------------------
-# 6- Backup the Alfresco content to google drive folder
-#------------------------------------------
-# Drive binary found in https://www.experts-exchange.com/articles/29279/Backup-Linux-Servers-to-Google-Drive.html
-# To install use 
-# wget -O drive https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg 
-# mv drive /usr/sbin/drive 
-# chmod 755 /usr/sbin/drive
-# Enter drive on terminal 
-# You will see a link in your terminal, which you can paste into your browser.  
-# You may be prompted to login to Google.  Next give Gdrive allow permissions, then Copy/Paste the code from the page into the terminal.  
-# Google drive command is now ready.
+
+  #------------------------------------------
+  # 6- Backup the Alfresco content to google drive folder
+  #------------------------------------------
+  # Drive binary found in https://www.experts-exchange.com/articles/29279/Backup-Linux-Servers-to-Google-Drive.html
+  # To install use 
+  # wget -O drive https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg 
+  # mv drive /usr/sbin/drive 
+  # chmod 755 /usr/sbin/drive
+  # Enter drive on terminal 
+  # You will see a link in your terminal, which you can paste into your browser.  
+  # You may be prompted to login to Google.  Next give Gdrive allow permissions, then Copy/Paste the code from the page into the terminal.  
+  # Google drive command is now ready.
+
     /usr/sbin/drive upload -f $TARGET_FOLDER/$TIMESTAMP.tgz
-
-  fi
-
+    fi
+   
 #------------------------------------------
-# 6 - Remove backups older than DUMP_NUM days
+# 7 - Remove backups older than DUMP_NUM days
 #------------------------------------------
     
-  bkplist=( $(find $TARGET_FOLDER/* -mtime +${DUMP_NUM} | cut -d\/ -f2) )
-  amount=$(find $TARGET_FOLDER/* -mtime +${DUMP_NUM} | cut -d\/ -f2 | wc -l)
+  bkplist=( $(find $TARGET_FOLDER/ -mtime +${DUMP_NUM} | cut -d\/ -f5) )
+  amount=$(find $TARGET_FOLDER/ -mtime +${DUMP_NUM} | cut -d\/ -f5 | wc -l)
 
   for (( i = 0; i < $amount; i++ )); do
     	rm -rf $TARGET_FOLDER/${bkplist[$i]}
-    	echo ${bkplist[$i]} >> $TARGET_FOLDER/teste
-	echo $? >> $TARGET_FOLDER/teste
-    gdelete=$(/usr/sbin/drive list -q "'root' in parents" | grep ${bkplist[$i]} | cut -d" " -f1)
+        gdelete=$(/usr/sbin/drive list -q "'root' in parents" | grep ${bkplist[$i]} | cut -d" " -f1)
 
-  if [ "$?" = "0" ]; then
-    /usr/sbin/drive delete -i $gdelete  
-  else 
-    echo "No backups in google drive to remove"
-  fi
+    if [ "$?" = "0" ]; then
+          /usr/sbin/drive delete -i $gdelete  
+      else 
+          echo "No backups in google drive to remove"
+    fi
   done
+
 #Unset variable postgresql password
   unset POSTGRESPASS 

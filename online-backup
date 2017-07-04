@@ -1,0 +1,43 @@
+If you want to backup alfresco online
+
+#------------------------------------------
+# 1 - Google Drive - Google drive offers free plans with 15 GB of storage
+#------------------------------------------
+ # Drive binary found in https://www.experts-exchange.com/articles/29279/Backup-Linux-Servers-to-Google-Drive.html
+   To install use 
+   wget -O drive https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg 
+   mv drive /usr/sbin/drive 
+   chmod 755 /usr/sbin/drive
+   Enter drive on terminal 
+   You will see a link in your terminal, which you can paste into your browser.  
+   You may be prompted to login to Google.  Next give Gdrive allow permissions, then Copy/Paste the code from the page into the terminal.  
+   Google drive command is now ready.
+
+#------------------------------------------
+# 2 - Mega - Mega offers free plans with 15 GB of storage and 35 GB 30 days trial time  
+#------------------------------------------
+ # Tutorial found in http://www.matteomattei.com/backup-your-server-on-mega-co-nz-using-megatools/
+ # Debian and ubuntu
+   apt-get install -y megatools 
+
+ # CentOS and RHEL
+   yum install -y megatools 
+
+  # Create a configuration file with your credentials in /root/.megarc
+   [Login]
+   Username = Your_Mega_Username
+   Password = Your_Mega_Password
+
+  # Since the password is in clear, it is important to protect the file:
+   chmod 640 /root/.megarc
+
+  # Test now your mega installation and login credentials:
+   megals
+
+  # If shows
+   /Contacts
+   /Inbox
+   /Root
+   /Trash
+
+ # Megatools is now ready to use.

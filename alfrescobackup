@@ -115,20 +115,17 @@ function p_stop()
     rm -rf $TARGET_FOLDER/$TIMESTAMP/
 
   #------------------------------------------
-  # 6- Backup the Alfresco content to google drive folder
+  # 6- Backup the Alfresco content to online storage services
   #------------------------------------------
-  # Drive binary found in https://www.experts-exchange.com/articles/29279/Backup-Linux-Servers-to-Google-Drive.html
-  # To install use 
-  # wget -O drive https://drive.google.com/uc?id=0B3X9GlR6EmbnMHBMVWtKaEZXdDg 
-  # mv drive /usr/sbin/drive 
-  # chmod 755 /usr/sbin/drive
-  # Enter drive on terminal 
-  # You will see a link in your terminal, which you can paste into your browser.  
-  # You may be prompted to login to Google.  Next give Gdrive allow permissions, then Copy/Paste the code from the page into the terminal.  
-  # Google drive command is now ready.
+  # See online-backup file for instructions to proceed with mega or google drive
 
-    /usr/sbin/drive upload -f $TARGET_FOLDER/$TIMESTAMP.tgz
-    fi
+  # For google drive uncomment
+  #  /usr/sbin/drive upload -f $TARGET_FOLDER/$TIMESTAMP.tgz
+  
+  # For mega uncomment  
+  #  /usr/bin/megaput --no-progress $TARGET_FOLDER/$TIMESTAMP.tgz
+
+  fi
    
 #------------------------------------------
 # 7 - Remove backups older than DUMP_NUM days
@@ -139,13 +136,24 @@ function p_stop()
 
   for (( i = 0; i < $amount; i++ )); do
     	rm -rf $TARGET_FOLDER/${bkplist[$i]}
-      gdelete=$(/usr/sbin/drive list -q "'root' in parents" | grep ${bkplist[$i]} | cut -d" " -f1)
+	
+  # For google drive uncomment
+#      gdelete=$(/usr/sbin/drive list -q "'root' in parents" | grep ${bkplist[$i]} | cut -d" " -f1)
 
-     if [ "$?" = "0" ]; then
-          /usr/sbin/drive delete -i $gdelete  
-       else 
-          echo "No backups in google drive to remove"
-     fi
+#     if [ "$?" = "0" ]; then
+#          /usr/sbin/drive delete -i $gdelete  
+#       else 
+#          echo "No backups in google drive to remove"
+#     fi
+
+  # For mega uncomment  
+#      mdelete=$(/usr/bin/megals | grep ${bkplist[$i]} )
+#     if [ "$?" = "0" ]; then
+#          /usr/bin/megarm $mdelete
+#       else
+#          echo "No backups in mega to remove"
+#     fi
+
   done
 
 #Unset variable postgresql password

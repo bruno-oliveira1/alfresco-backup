@@ -20,6 +20,7 @@ function al_stop()
   # If Alfresco does not stop we MUST exit script
   # Backing up files with Alfresco working may
   # corrupt data indexes!!
+  
   if [ "$?" != "0" ]; then
     echo "Alfresco Stop FAILED - STOP SCRIPT!"
     exit 1;
@@ -67,15 +68,15 @@ function p_stop()
   PGPASSWORD=$POSTGRESPASS $DB_HOME/bin/pg_dump -U alfresco alfresco -Ft > $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
   chown postgres $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP  
   
-# Create a log with the date of the script
+  # Create a log with the date of the script
   echo " " >> /var/log/alfrescobackup.log
   echo $TIMESTAMP >> /var/log/alfrescobackup.log
 
   # Check if an error was returned
   if [ "$?" = "0" ]; then
-    echo "Database export worked!" >> /var/log/alfrescobackup.log
-  else
-    echo "Database export failed!" >> /var/log/alfrescobackup.log
+      echo "Database export worked!" >> /var/log/alfrescobackup.log
+    else
+      echo "Database export failed!" >> /var/log/alfrescobackup.log
   fi
 
 #------------------------------------------
@@ -138,13 +139,13 @@ function p_stop()
 
   for (( i = 0; i < $amount; i++ )); do
     	rm -rf $TARGET_FOLDER/${bkplist[$i]}
-        gdelete=$(/usr/sbin/drive list -q "'root' in parents" | grep ${bkplist[$i]} | cut -d" " -f1)
+      gdelete=$(/usr/sbin/drive list -q "'root' in parents" | grep ${bkplist[$i]} | cut -d" " -f1)
 
-    if [ "$?" = "0" ]; then
+     if [ "$?" = "0" ]; then
           /usr/sbin/drive delete -i $gdelete  
-      else 
+       else 
           echo "No backups in google drive to remove"
-    fi
+     fi
   done
 
 #Unset variable postgresql password

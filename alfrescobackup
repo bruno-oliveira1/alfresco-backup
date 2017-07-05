@@ -10,7 +10,7 @@
   AL_DATA="/opt/alfresco-community/alf_data"	 	# Alfresco data folder
   DB_HOME="/opt/alfresco-community/postgresql"	  	# PostgreSQL folder
   TARGET_FOLDER="/opt/alfresco-community/backup"	# Alfresco backup folder
-  POSTGRESPASS="THUya01"                        	# Postgresql password
+  POSTGRESPASS="password"                        	# Postgresql password
 
 # Function - Stop Alfresco
 function al_stop()

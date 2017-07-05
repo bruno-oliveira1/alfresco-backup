@@ -106,7 +106,6 @@ function p_stop()
 #------------------------------------------
 # 5 - Merge the database and data files
 #------------------------------------------
-
   # Create a backup filename with timestamp
   tar zcf $TARGET_FOLDER/$TIMESTAMP.tgz $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
 
@@ -114,9 +113,9 @@ function p_stop()
   if [ -f "$TARGET_FOLDER/$TIMESTAMP.tgz" ]; then
     rm -rf $TARGET_FOLDER/$TIMESTAMP/
 
-  #------------------------------------------
-  # 6- Backup the Alfresco content to online storage services
-  #------------------------------------------
+#------------------------------------------
+# 6- Backup the Alfresco content to online storage services
+#------------------------------------------
   # See online-backup file for instructions to proceed with mega or google drive
 
   # For google drive uncomment

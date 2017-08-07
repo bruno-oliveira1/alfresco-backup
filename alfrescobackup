@@ -130,7 +130,7 @@ function p_stop()
 # 7 - Remove backups older than DUMP_NUM days
 #------------------------------------------
     
-  bkplist=( $(find $TARGET_FOLDER/ -mtime +${DUMP_NUM} | cut -d\/ -f5) )
+  bkplist=( $(find $TARGET_FOLDER/ -mtime +${DUMP_NUM} | cut -d\/ -f2) )
   amount=$(find $TARGET_FOLDER/ -mtime +${DUMP_NUM} | cut -d\/ -f5 | wc -l)
 
   for (( i = 0; i < $amount; i++ )); do

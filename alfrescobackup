@@ -12,47 +12,44 @@
   TARGET_FOLDER="/opt/alfresco-community/backup"	# Alfresco backup folder
   POSTGRESPASS="password"                        	# Postgresql password
 
+#----------------------------------------
+# 0 - Functions
+#----------------------------------------
+ 
 # Function - Stop Alfresco
 function al_stop()
 {
-  $AL_FOLDER/alfresco.sh stop
-
-  # If Alfresco does not stop we MUST exit script
-  # Backing up files with Alfresco working may
-  # corrupt data indexes!!
-  
-  if [ "$?" != "0" ]; then
-    echo "Alfresco Stop FAILED - STOP SCRIPT!"
-    exit 1;
-  fi
+  $AL_FOLDER/alfresco.sh stop > /dev/null 2>&1
 }
 
 # Function - Start Alfresco
 function al_start()
 {
-  $AL_FOLDER/alfresco.sh start
+  $AL_FOLDER/alfresco.sh start > /dev/null 2>&1
 }
 
 # Function - Start Postgress SQL Server
 function p_start()
 {
-  $DB_HOME/scripts/ctl.sh start
+  $DB_HOME/scripts/ctl.sh start > /dev/null 2>&1
 }
 
 # Function - Stop Postgress SQL Server
 function p_stop()
 {
-  $DB_HOME/scripts/ctl.sh stop
+  $DB_HOME/scripts/ctl.sh stop > /dev/null 2>&1
 }
 
 #----------------------------------------
 # 1 - Begin by stopping Alfresco
 #----------------------------------------
+
   al_stop 
 
 #----------------------------------------
 # 2 - Backup the Alfresco database
 #----------------------------------------
+
   # Start the postgress database (which is stopped automatically
   # by the Alfresco stop script
   p_start 
@@ -65,7 +62,7 @@ function p_stop()
 
   # Backup the database to the target folder
   # -Ft = Export database as tar file
-  PGPASSWORD=$POSTGRESPASS $DB_HOME/bin/pg_dump -U alfresco alfresco -Ft > $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
+  PGPASSWORD=$POSTGRESPASS $DB_HOME/bin/pg_dump -C -U alfresco alfresco -Ft > $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
   chown postgres $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP  
   
   # Create a log with the date of the script
@@ -99,13 +96,15 @@ function p_stop()
 #------------------------------------------
 # 4- Start the Alfresco service
 #------------------------------------------
-  p_stop
+
+  p_stop && al_stop 
 
   al_start 
 
 #------------------------------------------
 # 5 - Merge the database and data files
 #------------------------------------------
+
   # Create a backup filename with timestamp
   tar zcf $TARGET_FOLDER/$TIMESTAMP.tgz $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
 
@@ -116,10 +115,11 @@ function p_stop()
 #------------------------------------------
 # 6- Backup the Alfresco content to online storage services
 #------------------------------------------
+  
   # See online-backup file for instructions to proceed with mega or google drive
 
   # For google drive uncomment
-  #  /usr/sbin/drive upload -f $TARGET_FOLDER/$TIMESTAMP.tgz
+  #  /usr/sbin/driv3e upload -f $TARGET_FOLDER/$TIMESTAMP.tgz
   
   # For mega uncomment  
   #  /usr/bin/megaput --no-progress $TARGET_FOLDER/$TIMESTAMP.tgz
@@ -156,4 +156,4 @@ function p_stop()
   done
 
 #Unset variable postgresql password
-  unset POSTGRESPASS 
+  unset POSTGRESPASS

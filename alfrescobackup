@@ -10,7 +10,7 @@
   AL_DATA="/opt/alfresco-community/alf_data"	 	# Alfresco data folder
   DB_HOME="/opt/alfresco-community/postgresql"	  	# PostgreSQL folder
   TARGET_FOLDER="/opt/alfresco-community/backup"	# Alfresco backup folder
-  POSTGRESPASS="password"                        	# Postgresql password
+  POSTGRESPASS="Password"                        	# Postgresql password
 
 #----------------------------------------
 # 0 - Functions

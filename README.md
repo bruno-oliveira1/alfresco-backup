@@ -24,7 +24,7 @@ sed -e 's/\/backup\/alfresco/\/root/g -i /path_to_alfrescobackup_script/alfresco
 ## Change various values in a single line
 sed -e 's/259/10/g;s/KEYVALUE/AAAAAAAAAA/g;s/\/backup\/alfresco/\/root/g;s/POSTPASS/password/g;s/GPGPASS/gpgpssword/g;s/11M/1M/g;s/66W/6W/g;s/111/1/g;' /path_to_alfrescobackup_script/alfrescobackup -i /path_to_alfrescobackup_script/alfrescobackup
 
-####### Before change 
+###### Before change 
 
 | Variable                          | Description                                             |
 | --------------------------------- | ------------------------------------------------------- |
@@ -39,7 +39,7 @@ sed -e 's/259/10/g;s/KEYVALUE/AAAAAAAAAA/g;s/\/backup\/alfresco/\/root/g;s/POSTP
 | BK_KEEP_FULL="111" 					      |  How many full+inc cycle to keep                        |
 
 
-####### After change 
+###### After change 
 
 | Variable                          | Description                                              |
 | --------------------------------- | -------------------------------------------------------- |

@@ -19,11 +19,13 @@ See README file into duplicity-0.7.15 folder to get instructions how to install 
 ### Change variables in the script 
 Use \ before / in path values
 Eg: Change /backup/alfresco to /root 
+```Shell 
 sed -e 's/\/backup\/alfresco/\/root/g -i /path_to_alfrescobackup_script/alfrescobackup
-
+```
 ### Change various values in a single line
+```Shell
 sed -e 's/259/10/g;s/KEYVALUE/AAAAAAAAAA/g;s/\/backup\/alfresco/\/root/g;s/POSTPASS/password/g;s/GPGPASS/gpgpssword/g;s/11M/1M/g;s/66W/6W/g;s/111/1/g;' /path_to_alfrescobackup_script/alfrescobackup -i /path_to_alfrescobackup_script/alfrescobackup
-
+```
 #### Before change 
 
 | Variable                          | Description                                             |

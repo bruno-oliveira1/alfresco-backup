@@ -24,7 +24,7 @@ sed -e 's/\/backup\/alfresco/\/root/g -i /path_to_alfrescobackup_script/alfresco
 ## Change various values in a single line
 sed -e 's/259/10/g;s/KEYVALUE/AAAAAAAAAA/g;s/\/backup\/alfresco/\/root/g;s/POSTPASS/password/g;s/GPGPASS/gpgpssword/g;s/11M/1M/g;s/66W/6W/g;s/111/1/g;' /path_to_alfrescobackup_script/alfrescobackup -i /path_to_alfrescobackup_script/alfrescobackup
 
-Before change 
+####### Before change 
 
 | Variable                          | Description                                             |
 | --------------------------------- | ------------------------------------------------------- |
@@ -34,27 +34,22 @@ Before change
 | TARGET2='/backup/alfresco'        |  The path to where we want to store the postgres backup |
 | POSTGRESPASS="POSTPASS"           |  Postgresql password                                    |
 | PHRASE="GPGPASS"                  |  GPG password                                           |
-| BK_FULL_FREQ="11M" 			          |  Create a new full backup every 1 month                 |
-| BK_FULL_LIFE="66W" 					      |  Delete any backup older than 6 weeks                   |
+| BK_FULL_FREQ="11M" 			          |  Create a new full backup every 11 month                |
+| BK_FULL_LIFE="66W" 					      |  Delete any backup older than 66 weeks                  |
 | BK_KEEP_FULL="111" 					      |  How many full+inc cycle to keep                        |
 
 
-After change 
+####### After change 
 
-DUMP_NUM=10				         	                             # Number of DB backups to keep,
+| Variable                          | Description                                              |
+| --------------------------------- | -------------------------------------------------------- |
+| DUMP_NUM=10				         	      | # Number of DB backups to keep                           |
+| GPG_KEY='AAAAAAAAAA'              | # Use gpg --list-keys to get your keys                   |
+| TARGET='file:///root'             | # The path to where we want to store the backup          |
+| TARGET2='/root'                   | # The path to where we want to store the postgres backup |
+| POSTGRESPASS="psssword"           | # Postgresql password                                    |
+| PHRASE="gpgpassword"              | # GPG password                                           |
+| BK_FULL_FREQ="1M" 			          | # Create a new full backup every 1 month                 |
+| BK_FULL_LIFE="6W" 					      | # Delete any backup older than 6 weeks                   |
+| BK_KEEP_FULL="1"  					      | # How many full+inc cycle to keep                        |
 
-GPG_KEY='AAAAAAAAAA'                                     # Use gpg --list-keys to get your keys
-
-TARGET='file:///root'                                    # The path to where we want to store the backup
-
-TARGET2='/root'                                          # The path to where we want to store the postgres backup
-
-POSTGRESPASS="psssword"                                  # Postgresql password
-
-PHRASE="gpgpassword"                                     # GPG password
-
-BK_FULL_FREQ="1M" 			                          		   # Create a new full backup every 1 month
-
-BK_FULL_LIFE="6W" 					                             # Delete any backup older than 6 weeks
-
-BK_KEEP_FULL="1"  					                             # How many full+inc cycle to keep

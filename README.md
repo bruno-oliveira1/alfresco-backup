@@ -11,7 +11,7 @@ https://www.digitalocean.com/community/tutorials/how-to-setup-additional-entropy
 ### To generate gpg key
 https://www.digitalocean.com/community/tutorials/how-to-use-duplicity-with-gpg-to-securely-automate-backups-on-ubuntu
 
-### Download latest version of duplicity in http://savannah.c3sl.ufpr.br/duplicity/
+#### Download latest version of duplicity in http://savannah.c3sl.ufpr.br/duplicity/
 Eg: wget http://savannah.c3sl.ufpr.br/duplicity/duplicity-0.7.15.tar.gz
 tar xvf duplicity-0.7.15.tar.gz
 See README file into duplicity-0.7.15 folder to get instructions how to install duplicity and your dependences  

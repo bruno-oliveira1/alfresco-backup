@@ -25,6 +25,7 @@ sed -e 's/\/backup\/alfresco/\/root/g -i /path_to_alfrescobackup_script/alfresco
 sed -e 's/259/10/g;s/KEYVALUE/AAAAAAAAAA/g;s/\/backup\/alfresco/\/root/g;s/POSTPASS/password/g;s/GPGPASS/gpgpssword/g;s/11M/1M/g;s/66W/6W/g;s/111/1/g;' /path_to_alfrescobackup_script/alfrescobackup -i /path_to_alfrescobackup_script/alfrescobackup
 
 Before change 
+
 | Variable                          | Description           |                                  |
 | --------------------------------- | -------------------------------------------------------- |
 | DUMP_NUM=259				         	    | # Number of DB backups to keep                           |

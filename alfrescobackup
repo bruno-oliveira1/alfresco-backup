@@ -4,14 +4,26 @@
 # Rewriteen by Bruno Oliveira
 
 # Configuration:
-  TIMESTAMP=$(date +%mM-%dD-%YA-%HH-%MM)	  	# Create timestamp using format month, day, year, hour, minute
-  DUMP_NUM=7				         	# Number of backups to keep
-  AL_FOLDER="/opt/alfresco-community"		  	# Alfresco folder
-  AL_DATA="/opt/alfresco-community/alf_data"	 	# Alfresco data folder
-  DB_HOME="/opt/alfresco-community/postgresql"	  	# PostgreSQL folder
-  TARGET_FOLDER="/opt/alfresco-community/backup"	# Alfresco backup folder
-  POSTGRESPASS="Password"                        	# Postgresql password
-
+  TIMESTAMP=$(date +%mM-%dD-%YA-%HH-%MM)	  	   # Create timestamp using format month, day, year, hour, minute
+  AL_FOLDER="/opt/alfresco-community"		  	   # Alfresco folder
+  DUMP_NUM=7				         	   # Number of DB backups to keep
+  DB_HOME="/opt/alfresco-community/postgresql"	  	   # PostgreSQL folder
+  GPG_KEY='KEYVALUE'                                       # Use gpg --list-keys to get your keys
+  SOURCE='/opt/alfresco-community/alf_data'                # The path to where the files that we want to backup are
+  TARGET='file:///backup/alfresco'                         # The path to where we want to store the backup
+  TARGET2='/backup/alfresco'                               # The path to where we want to store the postgres backup
+  DUPLICITY=`which duplicity`                              # Duplicity 
+  POSTGRESPASS="POSTPASS"                                  # Postgresql password
+  PHRASE="GPGPASS"                                         # GPG password
+  BK_FULL_FREQ="1M" 					   # Create a new full backup every 1 month
+  BK_FULL_LIFE="6W" 					   # Delete any backup older than 6 weeks
+  BK_KEEP_FULL="1"  					   # How many full+inc cycle to keep
+  NUMBER=`echo $TARGET2 | tr -cd '/' | wc -c`              # Number value its is added 1 to used bellow by find
+  echo $((NUMBER+1))
+  
+    echo " "  >> /var/log/alfrescobackup.log 
+    echo "Start running at `date`"  >> /var/log/alfrescobackup.log
+    
 #----------------------------------------
 # 0 - Functions
 #----------------------------------------
@@ -26,6 +38,12 @@ function al_stop()
 function al_start()
 {
   $AL_FOLDER/alfresco.sh start > /dev/null 2>&1
+}
+
+## Function - Restart Alfresco
+function al_restart()
+{
+  $AL_FOLDER/alfresco.sh restart > /dev/null 2>&1
 }
 
 # Function - Start Postgress SQL Server
@@ -54,103 +72,61 @@ function p_stop()
   # by the Alfresco stop script
   p_start 
 
+  # Create a log with the date of the script
+  echo " " >> /var/log/alfrescobackup.log
+  echo "Begin postgres backup at $TIMESTAMP" >> /var/log/alfrescobackup.log
+
   # Create a filename for the database tar
   DB_DUMP=alfresco_db_${TIMESTAMP}.tar
 
-  # Criar diretorio onde ficam os bacapes  
-  mkdir -p $TARGET_FOLDER/$TIMESTAMP
-
   # Backup the database to the target folder
   # -Ft = Export database as tar file
-  PGPASSWORD=$POSTGRESPASS $DB_HOME/bin/pg_dump -U alfresco alfresco -Ft > $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
-  chown postgres $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP  
+  PGPASSWORD=$POSTGRESPASS $DB_HOME/bin/pg_dump -U alfresco alfresco -Ft > $TARGET2/$DB_DUMP
   
-  # Create a log with the date of the script
-  echo " " >> /var/log/alfrescobackup.log
-  echo $TIMESTAMP >> /var/log/alfrescobackup.log
-
   # Check if an error was returned
   if [ "$?" = "0" ]; then
       echo "Database export worked!" >> /var/log/alfrescobackup.log
     else
       echo "Database export failed!" >> /var/log/alfrescobackup.log
   fi
+  chown postgres $TARGET2/$DB_DUMP  
 
 #------------------------------------------
 # 3 - Backup the Alfresco content folder
 #------------------------------------------
-  # Create a file name with timestamp
-  AL_DUMP=alfresco_data_${TIMESTAMP}.tgz
 
-  # Tar the Alfresco data folder to the backup
-  # to the backup folder specified
-  tar zcf $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $AL_DATA >> /var/log/alfrescobackup.log
-  
-  # Alfresco data check if an error was returned
+## Backup our files ##
+#$DUPLICITY --full-if-older-than $BK_FULL_FREQ ${SOURCE} --encrypt-key="${GPG_KEY}" --asynchronous-upload ${TARGET}
+PASSPHRASE=$PHRASE $DUPLICITY --full-if-older-than $BK_FULL_FREQ ${SOURCE} --encrypt-key="${GPG_KEY}" --asynchronous-upload ${TARGET}
+#  Alfresco data check if an error was returned
   if [ "$?" = "0" ]; then
     echo "Alfresco alf_data backup worked!" >> /var/log/alfrescobackup.log
   else
     echo "Alfresco alf_data backup failed!" >> /var/log/alfrescobackup.log
   fi
 
+## Removing old backups##
+$DUPLICITY remove-older-than $BK_FULL_LIFE --force ${TARGET} >> /var/log/alfrescobackup.log
+$DUPLICITY remove-all-inc-of-but-n-full $BK_KEEP_FULL --force ${TARGET} >> /var/log/alfrescobackup.log
+
 #------------------------------------------
 # 4- Start the Alfresco service
 #------------------------------------------
 
-  p_stop && al_stop 
-
-  al_start 
-
-#------------------------------------------
-# 5 - Merge the database and data files
-#------------------------------------------
-
-  # Create a backup filename with timestamp
-  tar zcf $TARGET_FOLDER/$TIMESTAMP.tgz $TARGET_FOLDER/$TIMESTAMP/$AL_DUMP $TARGET_FOLDER/$TIMESTAMP/$DB_DUMP
-
-  # If files were merged, delete the duplicates
-  if [ -f "$TARGET_FOLDER/$TIMESTAMP.tgz" ]; then
-    rm -rf $TARGET_FOLDER/$TIMESTAMP/
-
-#------------------------------------------
-# 6- Backup the Alfresco content to online storage services
-#------------------------------------------
-  
-  # See online-backup file for instructions to proceed with mega or google drive
-
-  # For google drive uncomment
-  #  /usr/sbin/driv3e upload -f $TARGET_FOLDER/$TIMESTAMP.tgz
-  
-  # For mega uncomment  
-  #  /usr/bin/megaput --no-progress $TARGET_FOLDER/$TIMESTAMP.tgz
-
-  fi
+  p_stop 
+  al_stop
+  al_restart
    
 #------------------------------------------
-# 7 - Remove backups older than DUMP_NUM days
+# 5 - Remove backups older than DUMP_NUM days
 #------------------------------------------
     
-  bkplist=( $(find $TARGET_FOLDER/ -mtime +${DUMP_NUM} | cut -d\/ -f2) )
-  amount=$(find $TARGET_FOLDER/ -mtime +${DUMP_NUM} | cut -d\/ -f5 | wc -l)
+  bkplist=( $(find $TARGET2/ -name 'alfresco_db*' -mtime +${DUMP_NUM} | cut -d/ -f$NUMBER) )
+  amount=$(find $TARGET2/ -name 'alfresco_db*' -mtime +${DUMP_NUM} | cut -d/ -f$NUMBER | wc -l)
 
   for (( i = 0; i < $amount; i++ )); do
-    	rm -rf $TARGET_FOLDER/${bkplist[$i]}
-	
-  # For google drive uncomment
-#      gdelete=$(/usr/sbin/drive list -q "'root' in parents" | grep ${bkplist[$i]} | cut -d" " -f1)
-
-#     if [ "$?" = "0" ]; then
-#          /usr/sbin/drive delete -i $gdelete  
-#       else 
-#          echo "No backups in google drive to remove"
-#     fi
-
-  # For mega uncomment  
-#      mdelete=$(/usr/bin/megals | grep ${bkplist[$i]} )
-#     if [ "$?" = "0" ]; then
-#          /usr/bin/megarm $mdelete
-#       else
-#          echo "No backups in mega to remove"
-#     fi
-
+    	rm -rf $TARGET2/${bkplist[$i]}
+	echo "DB backup $TARGET2/${bkplist[$i]} removed" >> /var/log/alfrescobackup.log
   done
+
+    echo `date`  >> /var/log/alfrescobackup.log

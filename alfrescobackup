@@ -15,9 +15,9 @@
   DUPLICITY=`which duplicity`                              # Duplicity 
   POSTGRESPASS="POSTPASS"                                  # Postgresql password
   PHRASE="GPGPASS"                                         # GPG password
-  BK_FULL_FREQ="1M" 					   # Create a new full backup every 1 month
-  BK_FULL_LIFE="6W" 					   # Delete any backup older than 6 weeks
-  BK_KEEP_FULL="1"  					   # How many full+inc cycle to keep
+  BK_FULL_FREQ="11M" 					   # Create a new full backup every 1 month
+  BK_FULL_LIFE="66W" 					   # Delete any backup older than 6 weeks
+  BK_KEEP_FULL="111"  					   # How many full+inc cycle to keep
   NUMBER=`echo $TARGET2 | tr -cd '/' | wc -c`              # Number value its is added 1 to used bellow by find
   echo $((NUMBER+1))
   

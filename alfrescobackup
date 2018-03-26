@@ -6,24 +6,21 @@
 # Configuration:
   TIMESTAMP=$(date +%mM-%dD-%YA-%HH-%MM)	  	   # Create timestamp using format month, day, year, hour, minute
   AL_FOLDER="/opt/alfresco-community"		  	   # Alfresco folder
-  DUMP_NUM=259				         	   # Number of DB backups to keep
+  DUMP_NUM=7				         	   # Number of DB backups to keep
   DB_HOME="/opt/alfresco-community/postgresql"	  	   # PostgreSQL folder
-  GPG_KEY='KEYVALUE'                                       # Use gpg --list-keys to get your keys
+  GPG_KEY='0000000000000000000000000000000000000000'       # Use gpg --list-keys to get your keys
   SOURCE='/opt/alfresco-community/alf_data'                # The path to where the files that we want to backup are
-  TARGET='file:///backup/alfresco'                         # The path to where we want to store the backup
-  TARGET2='/backup/alfresco'                               # The path to where we want to store the postgres backup
+  TARGET='file:///opt/alfresco-community/backup/duplicity' # The path to where we want to store the backup
+  TARGET2='/opt/alfresco-community/backup/duplicity'       # The path to where we want to store the backup
   DUPLICITY=`which duplicity`                              # Duplicity 
-  POSTGRESPASS="POSTPASS"                                  # Postgresql password
-  PHRASE="GPGPASS"                                         # GPG password
-  BK_FULL_FREQ="11M" 					   # Create a new full backup every 1 month
-  BK_FULL_LIFE="66W" 					   # Delete any backup older than 6 weeks
-  BK_KEEP_FULL="111"  					   # How many full+inc cycle to keep
-  NUMBER=`echo $TARGET2 | tr -cd '/' | wc -c`              # Number value its is added 1 to used bellow by find
-  echo $((NUMBER+1))
-  
-    echo " "  >> /var/log/alfrescobackup.log 
-    echo "Start running at `date`"  >> /var/log/alfrescobackup.log
-    
+  POSTGRESPASS="postgrespass"                              # Postgresql password
+  PHRASE="gpgpass"                                         # GPG password
+  BK_FULL_FREQ="1M" 					   # Create a new full backup every 1 month
+  BK_FULL_LIFE="5W" 					   # Delete any backup older than 7 weeks
+  BK_KEEP_FULL="1"  					   # How many full+inc cycle to keep
+
+    echo `date`  > /var/log/alfrescobackup.log
+
 #----------------------------------------
 # 0 - Functions
 #----------------------------------------
@@ -74,7 +71,7 @@ function p_stop()
 
   # Create a log with the date of the script
   echo " " >> /var/log/alfrescobackup.log
-  echo "Begin postgres backup at $TIMESTAMP" >> /var/log/alfrescobackup.log
+  echo $TIMESTAMP >> /var/log/alfrescobackup.log
 
   # Create a filename for the database tar
   DB_DUMP=alfresco_db_${TIMESTAMP}.tar
@@ -121,12 +118,12 @@ $DUPLICITY remove-all-inc-of-but-n-full $BK_KEEP_FULL --force ${TARGET} >> /var/
 # 5 - Remove backups older than DUMP_NUM days
 #------------------------------------------
     
-  bkplist=( $(find $TARGET2/ -name 'alfresco_db*' -mtime +${DUMP_NUM} | cut -d/ -f$NUMBER) )
-  amount=$(find $TARGET2/ -name 'alfresco_db*' -mtime +${DUMP_NUM} | cut -d/ -f$NUMBER | wc -l)
+  bkplist=( $(find $TARGET2/ -name 'alfresco_db*' -mtime +${DUMP_NUM} | cut -d/ -f6) )
+  amount=$(find $TARGET2/ -name 'alfresco_db*' -mtime +${DUMP_NUM} | cut -d/ -f6 | wc -l)
 
   for (( i = 0; i < $amount; i++ )); do
     	rm -rf $TARGET2/${bkplist[$i]}
-	echo "DB backup $TARGET2/${bkplist[$i]} removed" >> /var/log/alfrescobackup.log
+	echo DB backup $TARGET2/${bkplist[$i]} removed >> /var/log/alfrescobackup.log
   done
 
     echo `date`  >> /var/log/alfrescobackup.log
